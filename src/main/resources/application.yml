@@ -35,17 +35,7 @@ postgresql:
 server:
   port: 8083
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
-  info:
-    env:
-      enabled: true
+
 
 logging:
   level:
@@ -57,3 +47,15 @@ logging:
 security:
   jwt:
     secret: "LONque1234567890LONque1234567890abcd"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
