@@ -63,14 +63,13 @@ resource "aws_cloudwatch_log_group" "inventory_service" {
   retention_in_days = 14
 }
 
-variable "ecr_registry" {}
-variable "db_host" {}
-variable "db_jdbc_url" {}
-variable "db_password" {}
-variable "db_username" {}
-variable "jwt_secret" {}
-variable "security_group_id" {}
-variable "target_group_arn" {}
-variable "ecs_execution_role_arn" {}
-variable "ecs_task_role_arn" {}
-
+variable "ecr_registry" { default = "dummy" }
+variable "db_host" { default = "dummy" }
+variable "db_jdbc_url" { default = "dummy" }
+variable "db_password" { default = "dummy" }
+variable "db_username" { default = "dummy" }
+variable "jwt_secret" { default = "dummy" }
+variable "security_group_id" { default = "sg-00000000" }
+variable "target_group_arn" { default = "arn:aws:elasticloadbalancing:us-east-1:000000000000:targetgroup/dummy/0000000000000000" }
+variable "ecs_execution_role_arn" { default = "arn:aws:iam::000000000000:role/dummy" }
+variable "ecs_task_role_arn" { default = "arn:aws:iam::000000000000:role/dummy" }
