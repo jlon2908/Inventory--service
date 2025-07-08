@@ -72,4 +72,4 @@ variable "jwt_secret" { default = "dummy" }
 variable "security_group_id" { default = "sg-00000000" }
 variable "target_group_arn" { default = "arn:aws:elasticloadbalancing:us-east-1:000000000000:targetgroup/dummy/0000000000000000" }
 variable "ecs_execution_role_arn" { default = "arn:aws:iam::148761677807:role/arka-task-execution-role" }
-variable "ecs_task_role_arn" { default = "arn:aws:iam::000000000000:role/dummy" }
+variable "ecs_task_role_arn" { default = "arn:aws:iam::148761677807:role/arka-task-execution-role" }
