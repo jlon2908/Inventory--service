@@ -63,7 +63,7 @@ resource "aws_cloudwatch_log_group" "inventory_service" {
   retention_in_days = 14
 }
 
-variable "ecr_registry" { default = "dummy" }
+variable "ecr_registry" { default = "148761677807.dkr.ecr.us-east-1.amazonaws.com" }
 variable "db_host" { default = "dummy" }
 variable "db_jdbc_url" { default = "dummy" }
 variable "db_password" { default = "dummy" }
