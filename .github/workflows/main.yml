@@ -1,1 +1,83 @@
+name: Build, Push to ECR and Deploy to ECS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t inventory-service:latest .
+
+      - name: Tag Docker image
+        run: |
+          docker tag inventory-service:latest ${{ steps.login-ecr.outputs.registry }}/inventory-service:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/inventory-service:latest
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_JDBC_URL: ${{ secrets.DB_JDBC_URL }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SECURITY_GROUP_ID: ${{ secrets.SECURITY_GROUP_ID }}
+          TARGET_GROUP_ARN: ${{ secrets.TARGETGROUP }}
+          VPC_ID: ${{ secrets.VPC_ID }}
+          ECS_EXECUTION_ROLE_ARN: ${{ secrets.ECS_EXECUTION_ROLE_ARN }}
+          ECS_TASK_ROLE_ARN: ${{ secrets.ECS_TASK_ROLE_ARN }}
+        run: |
+          terraform apply -auto-approve \
+            -var="ecr_registry=$ECR_REGISTRY" \
+            -var="db_host=$DB_HOST" \
+            -var="db_jdbc_url=$DB_JDBC_URL" \
+            -var="db_password=$DB_PASSWORD" \
+            -var="db_username=$DB_USERNAME" \
+            -var="jwt_secret=$JWT_SECRET" \
+            -var="security_group_id=$SECURITY_GROUP_ID" \
+            -var="target_group_arn=$TARGET_GROUP_ARN" \
+            -var="ecs_execution_role_arn=$ECS_EXECUTION_ROLE_ARN" \
+            -var="ecs_task_role_arn=$ECS_TASK_ROLE_ARN"
 
