@@ -1,11 +1,11 @@
-name: Build, Push to ECR and Deploy to ECS
+name: Build, Create ECR, Push to ECR and Deploy to ECS
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-push-deploy:
+  build-create-push-deploy:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -31,6 +31,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform Init (ECR)
+        run: terraform init -backend-config="bucket=arka-dev-artifacts" -backend-config="key=inventory-service/terraform.tfstate" -backend-config="region=us-east-1"
+        working-directory: .
+
+      - name: Terraform Apply (ECR)
+        run: terraform apply -auto-approve -target=aws_ecr_repository.inventory_service
+        working-directory: .
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -47,15 +60,7 @@ jobs:
         run: |
           docker push ${{ steps.login-ecr.outputs.registry }}/inventory-service:latest
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.5
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
+      - name: Terraform Apply (ECS Service)
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -80,4 +85,4 @@ jobs:
             -var="target_group_arn=$TARGET_GROUP_ARN" \
             -var="ecs_execution_role_arn=$ECS_EXECUTION_ROLE_ARN" \
             -var="ecs_task_role_arn=$ECS_TASK_ROLE_ARN"
-
+        working-directory: .
