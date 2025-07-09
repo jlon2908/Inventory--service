@@ -16,6 +16,6 @@ public class WebClientConfig {
 
     @Bean
     public WebClient catalogWebClient(WebClient.Builder builder) {
-        return builder.baseUrl("http://localhost:8080").build();
+        return builder.baseUrl("http://arka-alb-1425980331.us-east-1.elb.amazonaws.com").build();
     }
 }
