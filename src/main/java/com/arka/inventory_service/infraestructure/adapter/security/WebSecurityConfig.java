@@ -31,9 +31,10 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    
+
     private final JwtSecurityContextRepository jwtSecurityContextRepository;
 
+    
     @Value("${security.jwt.secret}")
     private String jwtSecret;
 
